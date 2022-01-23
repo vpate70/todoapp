@@ -61,6 +61,17 @@ export default class CustomModal extends Component {
                 placeholder="Enter Todo description"
               />
             </FormGroup>
+            <FormGroup>
+              <Label for="todo-tags">Tags</Label>
+              <Input
+                type="text"
+                id="todo-tags"
+                name="tags"
+                value={this.state.activeItem.tags}
+                onChange={this.handleChange}
+                placeholder="Enter Todo Tags"
+              />
+            </FormGroup>
             <FormGroup check>
               <Label check>
                 <Input

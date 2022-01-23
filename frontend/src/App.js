@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import Modal from "./components/Modal";
+import SignIn from "./components/SignIn"
 import axios from "axios";
+import ApiCalendar from "react-google-calendar-api";
+import {Input, Form, FormGroup} from "reactstrap";
 
 axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 axios.defaults.xsrfCookieName = "csrftoken";
@@ -9,15 +12,19 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      viewCompleted: false,
+      selectValue: 'None',
+      viewCompleted: -1,
       todoList: [],
       modal: false,
+      allTags: [],
       activeItem: {
         title: "",
         description: "",
         completed: false,
+        tags: '',
       },
     };
+    this.handleDropdownChange = this.handleDropdownChange.bind(this);
   }
 
   componentDidMount() {
@@ -27,7 +34,13 @@ class App extends Component {
   refreshList = () => {
     axios
       .get("/api/todos/")
-      .then((res) => this.setState({ todoList: res.data }))
+      .then((res) => {
+        var li = []
+        for(var i = 0;  i<res.data.length; i++){
+          li.push(res.data[i].tags)
+        }
+        this.setState({ todoList: res.data, allTags: [... new Set(li)]})
+      })
       .catch((err) => console.log(err));
   };
 
@@ -56,7 +69,7 @@ class App extends Component {
   };
 
   createItem = () => {
-    const item = { title: "", description: "", completed: false };
+    const item = { title: "", description: "", completed: false, tags: "" };
 
     this.setState({ activeItem: item, modal: !this.state.modal });
   };
@@ -66,25 +79,36 @@ class App extends Component {
   };
 
   displayCompleted = (status) => {
-    if (status) {
-      return this.setState({ viewCompleted: true });
+    if (status === 1) { //completed
+      return this.setState({ viewCompleted: 1 } );
+    }
+    if(status === 0){ //not completed
+      return this.setState({ viewCompleted: 0 });
     }
 
-    return this.setState({ viewCompleted: false });
+    if(status === -1){ //all
+      return this.setState({ viewCompleted: -1 });
+    }
   };
 
   renderTabList = () => {
     return (
       <div className="nav nav-tabs">
         <span
-          onClick={() => this.displayCompleted(true)}
-          className={this.state.viewCompleted ? "nav-link active" : "nav-link"}
+          onClick={() => this.displayCompleted(-1)}
+          className={this.state.viewCompleted  === -1 ? "nav-link active" : "nav-link"}
+        >
+          All
+        </span>
+        <span
+          onClick={() => this.displayCompleted(1)}
+          className={this.state.viewCompleted === 1 ? "nav-link active" : "nav-link"}
         >
           Complete
         </span>
         <span
-          onClick={() => this.displayCompleted(false)}
-          className={this.state.viewCompleted ? "nav-link" : "nav-link active"}
+          onClick={() => this.displayCompleted(0)}
+          className={this.state.viewCompleted  === 0 ? "nav-link active" : "nav-link"}
         >
           Incomplete
         </span>
@@ -94,9 +118,30 @@ class App extends Component {
 
   renderItems = () => {
     const { viewCompleted } = this.state;
-    const newItems = this.state.todoList.filter(
-      (item) => item.completed === viewCompleted
-    );
+    var newItems;
+
+    if(viewCompleted === -1){
+      newItems = this.state.todoList;
+    }
+    else{
+      if(viewCompleted === 1){
+        newItems = this.state.todoList.filter(
+          (item) => item.completed === true
+        );
+      }
+      else{
+        newItems = this.state.todoList.filter(
+          (item) => item.completed === false
+        );
+      }
+    }
+
+    if(this.state.selectValue === 'None'){
+    }
+    else{
+      newItems = newItems.filter((item) => item.tags === this.state.selectValue);
+    }
+
 
     return newItems.map((item) => (
       <li
@@ -109,7 +154,9 @@ class App extends Component {
           }`}
           title={item.description}
         >
-          {item.title}
+          {item.title} 
+          {/* https://medium.com/@seanmcp/%EF%B8%8F-how-to-use-emojis-in-react-d23bbf608bf7 Add the Check or Cross on the All page*/}
+          {item.completed ===  true ? <span role="img" aria-label="White Heavy Check">✅</span> :<span role="img" aria-label="Cross Mark">❌</span>}  
         </span>
         <span>
           <button
@@ -129,9 +176,14 @@ class App extends Component {
     ));
   };
 
+  handleDropdownChange(e) {
+    this.setState({ selectValue: e.target.value });
+  }
+
   render() {
     return (
       <main className="container">
+        <SignIn />
         <h1 className="text-white text-uppercase text-center my-4">Todo app</h1>
         <div className="row">
           <div className="col-md-6 col-sm-10 mx-auto p-0">
@@ -143,6 +195,16 @@ class App extends Component {
                 >
                   Add task
                 </button>
+                <Form>
+                  <FormGroup>
+                    <Input type="select" name="select" id="exampleSelect" onChange={this.handleDropdownChange}>
+                      <option value="None">None</option>
+                      {this.state.allTags.map((tag)=>(
+                        <option value={`${tag}`}>{tag}</option>
+                      ))}
+                    </Input>
+                  </FormGroup>
+                </Form>
               </div>
               {this.renderTabList()}
               <ul className="list-group list-group-flush border-top-0">
@@ -159,6 +221,7 @@ class App extends Component {
           />
         ) : null}
       </main>
+      
     );
   }
 }
