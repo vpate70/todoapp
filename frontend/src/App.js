@@ -37,7 +37,7 @@ class App extends Component {
       .then((res) => {
         var li = []
         for(var i = 0;  i<res.data.length; i++){
-          li.push(res.data[i].tags)
+          li.push(res.data[i].tags.toLowerCase())
         }
         this.setState({ todoList: res.data, allTags: [... new Set(li)]})
       })
@@ -139,7 +139,7 @@ class App extends Component {
     if(this.state.selectValue === 'None'){
     }
     else{
-      newItems = newItems.filter((item) => item.tags === this.state.selectValue);
+      newItems = newItems.filter((item) => item.tags.toLowerCase() === this.state.selectValue);
     }
 
 
