@@ -3,7 +3,7 @@ import Modal from "./components/Modal";
 import SignIn from "./components/SignIn"
 import axios from "axios";
 import ApiCalendar from "react-google-calendar-api";
-import {Input, Form, FormGroup} from "reactstrap";
+import {Input, Form, FormGroup, FormText} from "reactstrap";
 
 axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 axios.defaults.xsrfCookieName = "csrftoken";
@@ -189,22 +189,31 @@ class App extends Component {
           <div className="col-md-6 col-sm-10 mx-auto p-0">
             <div className="card p-3">
               <div className="mb-4">
-                <button
-                  className="btn btn-primary"
-                  onClick={this.createItem}
-                >
-                  Add task
-                </button>
-                <Form>
-                  <FormGroup>
-                    <Input type="select" name="select" id="exampleSelect" onChange={this.handleDropdownChange}>
-                      <option value="None">None</option>
-                      {this.state.allTags.map((tag)=>(
-                        <option value={`${tag}`}>{tag}</option>
-                      ))}
-                    </Input>
-                  </FormGroup>
-                </Form>
+              </div>
+              <div class="container">
+                <div class="row">
+                  <div class="col">
+                    <button
+                      className="btn btn-primary"
+                      onClick={this.createItem}
+                    >
+                      Add task
+                    </button>
+                  </div>
+                  <div class="col-sm">
+                    <Form>
+                        <FormGroup>
+                          <Input type="select" name="select" id="exampleSelect" onChange={this.handleDropdownChange}>
+                            <option value="None">None</option>
+                            {this.state.allTags.map((tag)=>(
+                              <option value={`${tag}`}>{tag}</option>
+                            ))}
+                          </Input>
+                          <FormText color="muted">Sort by Tag</FormText>
+                        </FormGroup>
+                      </Form>
+                  </div>
+                </div>
               </div>
               {this.renderTabList()}
               <ul className="list-group list-group-flush border-top-0">
