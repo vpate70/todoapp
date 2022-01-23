@@ -28,6 +28,7 @@ class App extends Component {
   }
 
   componentDidMount() {
+    document.body.style.backgroundColor = "grey"
     this.refreshList();
   }
 
@@ -121,7 +122,13 @@ class App extends Component {
     var newItems;
 
     if(viewCompleted === -1){
-      newItems = this.state.todoList;
+      var l1 = this.state.todoList.filter(
+        (item) => item.completed === false
+      );
+      var l2 = this.state.todoList.filter(
+        (item) => item.completed === true
+      );
+      newItems = l1.concat(l2);
     }
     else{
       if(viewCompleted === 1){
